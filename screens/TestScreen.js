@@ -21,11 +21,10 @@ const TestScreen = ({ navigation }) => {
     useEffect(() => {
         if (testEndedRef.current == false) {
             const checkFrameRate = () => {
-                const start = Date.now();
-                InteractionManager.runAfterInteractions(() => {
-                    const end = Date.now();
+                const start = performance.now();
+                requestAnimationFrame(() => {
+                    const end = performance.now();
                     const duration = end - start;
-                    console.log(`Frame duration: ${duration} ms`); // Log each frame duration
                     frameDurations.current.push(duration);
                 });
             }
@@ -133,6 +132,9 @@ const TestScreen = ({ navigation }) => {
         console.log("Output latency times to be saved:", outputLatenciesRef.current);
         console.log("Reaction times to be saved:", reactionTimesRef.current);
         console.log("Input latency times to be saved:", inputLatenciesRef.current);
+        console.log("Frame durations to be saved:", frameDurations.current);
+        console.log("Total frame duration:", totalDuration);
+        console.log("Number of frames:", frameDurations.current.length);
         console.log("Total number of red dot appeared:", counterRef.current);
         console.log("Average output latency:", averageOutputLatency);
         console.log("Average reaction time:", averageReactionTime);
