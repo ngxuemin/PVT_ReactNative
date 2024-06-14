@@ -31,9 +31,9 @@ const TestScreen = ({ navigation }) => {
             const interval = setInterval(checkFrameRate, 1000); // Check frame rate every second
             // Start the first dot appearance after 2 seconds
             timerRef.current = setTimeout(() => {
-                backendDotTime.current = Date.now(); // Record backend time when dot is scheduled
+                backendDotTime.current = performance.now(); // Record backend time when dot is scheduled
                 setShowDot(true);
-                dotAppearanceTime.current = Date.now(); // Record the time the dot appears
+                dotAppearanceTime.current = performance.now(); // Record the time the dot appears
 
                 // Calculate and store output latency of first dot
                 const outputLatency = dotAppearanceTime.current - backendDotTime.current;
@@ -59,7 +59,7 @@ const TestScreen = ({ navigation }) => {
     const handlePress = () => {
         if (showDot) {
             // Calculate reaction time
-            const reactionTime = Date.now() - dotAppearanceTime.current;
+            const reactionTime = performance.now() - dotAppearanceTime.current;
             console.log("Reaction time:", reactionTime);
 
             // Store reaction times
@@ -77,7 +77,7 @@ const TestScreen = ({ navigation }) => {
             });
 
             // Handle input latency
-            frontendRegistersClick.current = Date.now();
+            frontendRegistersClick.current = performance.now();
             setRegisterClick(true);
 
             // Send request to backend
@@ -90,7 +90,7 @@ const TestScreen = ({ navigation }) => {
             })
                 .then(response => response.json())
                 .then(data => {
-                    backendRegistersClick.current = Date.now();
+                    backendRegistersClick.current = performance.now();
                     const inputLatency = backendRegistersClick.current - frontendRegistersClick.current;
                     inputLatenciesRef.current.push(inputLatency);
                     console.log("Input latency:", inputLatency);
@@ -105,9 +105,9 @@ const TestScreen = ({ navigation }) => {
             if (testEndedRef.current == false) {
                 timerRef.current = setTimeout(() => {
                     if (testEndedRef.current == false) {
-                        backendDotTime.current = Date.now(); // Record backend time when dot is scheduled
+                        backendDotTime.current = performance.now(); // Record backend time when dot is scheduled
                         setShowDot(true);
-                        dotAppearanceTime.current = Date.now(); // Record the time the dot appears
+                        dotAppearanceTime.current = performance.now(); // Record the time the dot appears
 
                         // Calculate and store output latency
                         const outputLatency = dotAppearanceTime.current - backendDotTime.current;
