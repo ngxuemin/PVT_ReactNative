@@ -44,6 +44,7 @@ const TestScreen = ({ navigation }) => {
             // Cleanup
             return () => {
                 clearTimeout(timerRef.current);
+                clearInterval(interval);
             };
         };
     }, [navigation]);

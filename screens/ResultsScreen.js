@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Button } from 'react-native';
 
-const ResultsScreen = ({ route }) => {
+const ResultsScreen = ({ route, navigation }) => {
     const { reactionTime, adjustedReactionTime, inputLatency, outputLatency, averageFrameRate } = route.params;
     return (
         <View style={styles.container}>
@@ -10,6 +10,10 @@ const ResultsScreen = ({ route }) => {
             <Text style={styles.text}>Output Latency: {outputLatency} ms</Text>
             <Text style={styles.text}>Input Latency: {inputLatency} ms</Text>
             <Text style={styles.text}>Average Frame Rate: {averageFrameRate} FPS</Text>
+            <Button
+                title="Home"
+                onPress={() => navigation.navigate('Home')}
+            />
         </View>
     );
 };
