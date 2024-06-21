@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, InteractionManager } from 'react-native';
-import useFrameRateStandardization from '../utility/FrameRate';
 
 const TestScreen = ({ navigation }) => {
     const [showDot, setShowDot] = useState(false);
@@ -18,9 +17,6 @@ const TestScreen = ({ navigation }) => {
     const backendRegistersClick = useRef([]); // Keep track of when backend registers user's click
     const inputLatenciesRef = useRef([]); // Ref to keep track of latest input latencies
     const frameDurations = useRef([]); // Ref to store frame durations
-
-    // Integrate the frame rate standardization hook
-    useFrameRateStandardization(60);
 
     useEffect(() => {
         if (testEndedRef.current == false) {
@@ -86,13 +82,15 @@ const TestScreen = ({ navigation }) => {
         const averageDuration = totalDuration / frameDurations.current.length;
         const averageFrameRate = 1000 / averageDuration;
         const reactionTime = reactionTimesRef.current;
+        const adjustedReactionTime = (60 / averageFrameRate) * reactionTime;
         const inputLatency = inputLatenciesRef.current;
         const outputLatency = outputLatenciesRef.current;
         console.log("Average frame rate:", averageFrameRate);
         console.log("Reaction time:", reactionTime);
+        console.log("Adjusted reaction time:", adjustedReactionTime);
         console.log("Input latency:", inputLatency);
         console.log("Output latency:", outputLatency)
-        navigation.navigate('Results', { reactionTime, inputLatency, outputLatency, averageFrameRate });
+        navigation.navigate('Results', { reactionTime, adjustedReactionTime, inputLatency, outputLatency, averageFrameRate });
     };
 
     return (
