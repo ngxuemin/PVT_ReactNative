@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, InteractionManager } from 'react-native';
+import useFrameRateStandardization from '../utility/FrameRate';
 
 const TestScreen = ({ navigation }) => {
     const [showDot, setShowDot] = useState(false);
@@ -17,6 +18,9 @@ const TestScreen = ({ navigation }) => {
     const backendRegistersClick = useRef([]); // Keep track of when backend registers user's click
     const inputLatenciesRef = useRef([]); // Ref to keep track of latest input latencies
     const frameDurations = useRef([]); // Ref to store frame durations
+
+    // Integrate the frame rate standardization hook
+    useFrameRateStandardization(60);
 
     useEffect(() => {
         if (testEndedRef.current == false) {
@@ -41,17 +45,9 @@ const TestScreen = ({ navigation }) => {
                 console.log("Output latency of first dot:", outputLatency);
             }, 2000); // 2 seconds
 
-            // Set the timeout to end the test after 1 minute
-            const endTimeout = setTimeout(() => {
-                testEndedRef.current = true; // Indicate that the test has ended
-                logTimes();
-                clearInterval(interval);
-            }, 60000); // 1 minute
-
             // Cleanup
             return () => {
                 clearTimeout(timerRef.current);
-                clearTimeout(endTimeout);
             };
         };
     }, [navigation]);
@@ -61,13 +57,7 @@ const TestScreen = ({ navigation }) => {
             // Calculate reaction time
             const reactionTime = performance.now() - dotAppearanceTime.current;
             console.log("Reaction time:", reactionTime);
-
-            // Store reaction times
-            setReactionTimes((prevTimes) => {
-                const updatedTimes = [...prevTimes, reactionTime];
-                reactionTimesRef.current = updatedTimes; // Update the ref
-                return updatedTimes;
-            });
+            reactionTimesRef.current.push(reactionTime);
 
             // Store the number of dots appeared
             setCounter((prevCounter) => {
@@ -79,68 +69,30 @@ const TestScreen = ({ navigation }) => {
             // Handle input latency
             frontendRegistersClick.current = performance.now();
             setRegisterClick(true);
-
-            // Send request to backend
-            fetch('http://192.168.18.77:3000/register-click', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ timestamp: frontendRegistersClick.current })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    backendRegistersClick.current = performance.now();
-                    const inputLatency = backendRegistersClick.current - frontendRegistersClick.current;
-                    inputLatenciesRef.current.push(inputLatency);
-                    console.log("Input latency:", inputLatency);
-                })
-                .catch(error => {
-                    console.error('Error registering click:', error);
-                });
+            backendRegistersClick.current = performance.now();
+            const inputLatency = backendRegistersClick.current - frontendRegistersClick.current;
+            inputLatenciesRef.current.push(inputLatency);
+            console.log("Input latency:", inputLatency);
 
             setShowDot(false);
 
-            // Schedule the next dot appearance after 2 seconds
-            if (testEndedRef.current == false) {
-                timerRef.current = setTimeout(() => {
-                    if (testEndedRef.current == false) {
-                        backendDotTime.current = performance.now(); // Record backend time when dot is scheduled
-                        setShowDot(true);
-                        dotAppearanceTime.current = performance.now(); // Record the time the dot appears
-
-                        // Calculate and store output latency
-                        const outputLatency = dotAppearanceTime.current - backendDotTime.current;
-                        outputLatenciesRef.current.push(outputLatency);
-                        console.log("Output latency:", outputLatency);
-                    }
-                }, 2000);
-            }
+            // Log times and navigate to results
+            logTimes();
         }
     };
 
     const logTimes = () => {
-        const totalReactionTime = reactionTimesRef.current.reduce((acc, time) => acc + time, 0);
-        const averageReactionTime = totalReactionTime / counterRef.current;
-        const totalOutputLatency = outputLatenciesRef.current.reduce((acc, time) => acc + time, 0);
-        const averageOutputLatency = totalOutputLatency / outputLatenciesRef.current.length;
-        const totalInputLatency = inputLatenciesRef.current.reduce((acc, time) => acc + time, 0);
-        const averageInputLatency = totalInputLatency / outputLatenciesRef.current.length;
         const totalDuration = frameDurations.current.reduce((acc, curr) => acc + curr, 0);
         const averageDuration = totalDuration / frameDurations.current.length;
         const averageFrameRate = 1000 / averageDuration;
-        console.log("Output latency times to be saved:", outputLatenciesRef.current);
-        console.log("Reaction times to be saved:", reactionTimesRef.current);
-        console.log("Input latency times to be saved:", inputLatenciesRef.current);
-        console.log("Frame durations to be saved:", frameDurations.current);
-        console.log("Total frame duration:", totalDuration);
-        console.log("Number of frames:", frameDurations.current.length);
-        console.log("Total number of red dot appeared:", counterRef.current);
-        console.log("Average output latency:", averageOutputLatency);
-        console.log("Average reaction time:", averageReactionTime);
-        console.log("Average input latency:", averageInputLatency);
+        const reactionTime = reactionTimesRef.current;
+        const inputLatency = inputLatenciesRef.current;
+        const outputLatency = outputLatenciesRef.current;
         console.log("Average frame rate:", averageFrameRate);
-        navigation.navigate('Results', { averageReactionTime, averageOutputLatency, averageInputLatency, averageFrameRate });
+        console.log("Reaction time:", reactionTime);
+        console.log("Input latency:", inputLatency);
+        console.log("Output latency:", outputLatency)
+        navigation.navigate('Results', { reactionTime, inputLatency, outputLatency, averageFrameRate });
     };
 
     return (
