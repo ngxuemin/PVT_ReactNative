@@ -31,14 +31,18 @@ const TestScreen = ({ navigation }) => {
             const interval = setInterval(checkFrameRate, 1000); // Check frame rate every second
             // Start the first dot appearance after 2 seconds
             timerRef.current = setTimeout(() => {
-                backendDotTime.current = performance.now(); // Record backend time when dot is scheduled
-                setShowDot(true);
-                dotAppearanceTime.current = performance.now(); // Record the time the dot appears
+                // Synchronize with display refresh rate
+                // Code runs right before the next repaint/next screen refresh
+                requestAnimationFrame(() => {
+                    backendDotTime.current = performance.now(); // Record backend time when dot is scheduled
+                    setShowDot(true);
+                    dotAppearanceTime.current = performance.now(); // Record the time the dot appears
 
-                // Calculate and store output latency of first dot
-                const outputLatency = dotAppearanceTime.current - backendDotTime.current;
-                outputLatenciesRef.current.push(outputLatency);
-                console.log("Output latency of first dot:", outputLatency);
+                    // Calculate and store output latency of first dot
+                    const outputLatency = dotAppearanceTime.current - backendDotTime.current;
+                    outputLatenciesRef.current.push(outputLatency);
+                    console.log("Output latency of first dot:", outputLatency);
+                });
             }, 2000); // 2 seconds
 
             // Cleanup
@@ -83,15 +87,13 @@ const TestScreen = ({ navigation }) => {
         const averageDuration = totalDuration / frameDurations.current.length;
         const averageFrameRate = 1000 / averageDuration;
         const reactionTime = reactionTimesRef.current;
-        const adjustedReactionTime = (60 / averageFrameRate) * reactionTime;
         const inputLatency = inputLatenciesRef.current;
         const outputLatency = outputLatenciesRef.current;
         console.log("Average frame rate:", averageFrameRate);
         console.log("Reaction time:", reactionTime);
-        console.log("Adjusted reaction time:", adjustedReactionTime);
         console.log("Input latency:", inputLatency);
-        console.log("Output latency:", outputLatency)
-        navigation.navigate('Results', { reactionTime, adjustedReactionTime, inputLatency, outputLatency, averageFrameRate });
+        console.log("Output latency:", outputLatency);
+        navigation.navigate('Results', { reactionTime, inputLatency, outputLatency, averageFrameRate });
     };
 
     return (
