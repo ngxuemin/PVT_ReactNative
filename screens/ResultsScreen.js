@@ -6,9 +6,9 @@ const ResultsScreen = ({ route, navigation }) => {
     return (
         <View style={styles.container}>
             <Text style={styles.text}>Reaction Time: {reactionTime} ms</Text>
-            <Text style={styles.text}>Output Latency: {outputLatency} ms</Text>
+            {/* <Text style={styles.text}>Output Latency: {outputLatency} ms</Text>
             <Text style={styles.text}>Input Latency: {inputLatency} ms</Text>
-            <Text style={styles.text}>Average Frame Rate: {averageFrameRate} FPS</Text>
+            <Text style={styles.text}>Average Frame Rate: {averageFrameRate} FPS</Text> */}
             <Button
                 title="Home"
                 onPress={() => navigation.navigate('Home')}
